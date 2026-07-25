@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Legacy Wholesale CRM</title>
+<link rel="stylesheet" href="/src/styles/app.css" />
+<link rel="stylesheet" href="/src/styles/components/navigation.css" />
+<link rel="stylesheet" href="/src/styles/components/reactive-buttons.css" />
+<link rel="stylesheet" href="/src/styles/components/visual-upgrade.css" />
+<link rel="stylesheet" href="/src/styles/components/premium-shell.css" />
+<link rel="stylesheet" href="/src/styles/components/premium-interactions.css" />
+<link rel="stylesheet" href="/src/styles/components/dashboard-command-center.css" />
+<link rel="stylesheet" href="/src/styles/components/leads-api.css" />
+<link rel="stylesheet" href="/src/styles/components/pipeline-api-board.css" />
+<link rel="stylesheet" href="/src/styles/components/dashboard-server-sync.css" />
+<link rel="stylesheet" href="/src/styles/components/legacy-isolation.css" />
+<link rel="stylesheet" href="/src/styles/components/activity-center.css" />
+<link rel="stylesheet" href="/src/styles/components/legacy-lead-migration.css" />
+<link rel="stylesheet" href="/src/styles/components/migration-safety.css" />
+<link rel="stylesheet" href="/src/styles/components/task-center.css" />
+<link rel="stylesheet" href="/src/styles/components/followup-sequence-center.css" />
+<link rel="stylesheet" href="/src/styles/components/appointment-center.css" />
+<link rel="stylesheet" href="/src/styles/components/deal-analyzer.css" />
+<link rel="stylesheet" href="/src/styles/components/deal-command-center.css" />
+<link rel="stylesheet" href="/src/styles/components/deal-workspace-actions.css" />
+<link rel="stylesheet" href="/src/styles/components/deal-offer-details.css" />
+<link rel="stylesheet" href="/src/styles/components/deal-dashboard-pulse.css" />
+<link rel="stylesheet" href="/src/styles/components/buyers/buyer-database.css" />
+<link rel="stylesheet" href="/src/styles/components/buyers/buyer-form.css" />
+<link rel="stylesheet" href="/src/styles/components/buyers/buyer-detail-drawer.css" />
+<link rel="stylesheet" href="/src/styles/components/buyers/buyer-dashboard-pulse.css" />
+<link rel="stylesheet" href="/src/styles/components/quick-call.css" />
+<link rel="stylesheet" href="/src/styles/components/ai/ai-lead-intelligence.css" />
+<link rel="stylesheet" href="/src/styles/components/ai/ai-seller-qualification.css" />
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"><div class="brand">LEGACY WHOLESALE CRM</div><div class="sub">Acquisitions &bull; Follow-Up &bull; Dispositions</div><div class="nav">
+<button class="active" data-view="dashboard">Dashboard</button><button data-view="pipeline">Wholesale Pipeline</button><button data-view="leads">Lead Database</button><button data-view="automation">Automation Center</button><button data-view="ai">AI Acquisition Agent</button><button data-view="calendar">Appointments</button><button data-view="sequences">FSBO Sequences</button><button data-view="activity">Activity & Memory</button><button data-view="integrations">Integrations</button>
+</div></aside>
+<main class="main">
+<div class="topbar"><div><h1 id="viewTitle">Dashboard</h1><div class="sub">Two-user wholesaling command center</div></div><div class="top-actions"><select id="currentUser" class="btn"><option>Acquisition Manager 1</option><option>Acquisition Manager 2</option></select><button class="btn" onclick="simulateAIInbound()">Simulate AI Call</button><button class="btn gold" onclick="openLeadModal()">+ Add Lead</button></div></div>
+
+<section id="dashboard" class="view"><div class="grid">
+<div class="card kpi"><div class="label">Total Leads</div><div class="n" id="kpiTotal">0</div></div><div class="card kpi"><div class="label">Motivated Sellers</div><div class="n" id="kpiHot">0</div></div><div class="card kpi"><div class="label">Under Contract+</div><div class="n" id="kpiContract">0</div></div><div class="card kpi"><div class="label">Projected Assignment</div><div class="n" id="kpiAssignment">$0</div></div>
+<div class="card" style="grid-column:span 8"><div class="label">Lead Sources</div><h2>Distress Channels</h2><div class="source-grid" id="sourceGrid"></div></div>
+<div class="card ai-box" style="grid-column:span 4"><div class="ai-title"><span class="status-dot"></span>AI Acquisition Agent</div><p class="sub">Demo mode: inbound qualification, summary, routing and booking.</p><div id="aiLastSummary">No calls captured yet.</div></div>
+<div class="card" style="grid-column:span 12"><div class="label">Hot Leads</div><div id="hotLeadsTable"></div></div>
+</div></section>
+
+<section id="pipeline" class="view hidden"><div class="card"><div class="label">Exact Acquisition Pipeline</div><h2>Drag Leads Between Stages</h2><div class="notice">Drag-and-drop changes the lead stage and saves it to browser storage.</div><div class="pipeline-wrap"><div class="pipeline" id="pipelineBoard"></div></div></div></section>
+
+<section id="leads" class="view hidden"><div class="card"><div class="toolbar"><input id="searchLeads" class="btn search" placeholder="Search owner, address, phone..." oninput="renderLeads()"><select id="leadFilter" class="btn" onchange="renderLeads()"><option value="ALL">All Lead Types</option></select><select id="stageFilter" class="btn" onchange="renderLeads()"><option value="ALL">All Stages</option></select><select id="userFilter" class="btn" onchange="renderLeads()"><option value="ALL">Both Users</option><option>Acquisition Manager 1</option><option>Acquisition Manager 2</option></select></div><div id="leadTable"></div></div></section>
+
+<section id="automation" class="view hidden"><div class="split"><div class="card"><div class="label">Follow-Up Workflow</div><h2>Default Seller Automation</h2><div class="timeline" id="automationTimeline"></div></div><div class="card"><div class="label">Rules Engine</div><h2>Pipeline Intelligence</h2><div id="automationRules"></div></div></div><div class="card" style="margin-top:14px"><div class="label">Automation Queue</div><h2>Due & Upcoming Touches</h2><div class="toolbar"><button class="btn green" onclick="runDueAutomations()">Run Due Demo Actions</button><button class="btn" onclick="rebuildAutomationQueue()">Rebuild Queue</button></div><div id="automationQueue"></div></div></section>
+
+<section id="ai" class="view hidden"><div class="grid"><div class="card ai-box" style="grid-column:span 6"><div class="ai-title">AI Call Answering Demo</div><p>Creates a qualified seller, round-robin assignment, summary, follow-up and appointment.</p><button class="btn green" onclick="simulateAIInbound()">Run Demo Call</button></div><div class="card" style="grid-column:span 6"><div class="label">AI Qualification</div><h2>Seller Questions</h2><div class="code" id="qualificationQuestions"></div></div><div class="card" style="grid-column:span 6"><div class="label">Context-Aware Memory</div><h2>Selected Lead Memory</h2><div id="memoryPanel" class="code">Open a lead to load its context.</div></div><div class="card" style="grid-column:span 6"><div class="label">Pre-Call AI Briefing</div><h2>Acquisition Brief</h2><div id="briefing" class="code">Open a lead or run the demo call.</div></div></div></section>
+
+<section id="calendar" class="view hidden"><div class="card"><div class="topbar"><div><div class="label">Appointment Setting</div><h2>Seller Appointments</h2></div><button class="btn gold" onclick="openAppointmentModal()">+ Book Appointment</button></div><div id="appointments"></div></div></section>
+
+<section id="sequences" class="view hidden"><div class="card"><div class="label">FSBO Outreach</div><h2>Text + Email Sequence</h2><div class="notice">Send buttons below simulate the action locally and write it into the lead's activity history. Real SMS/email requires API integrations.</div><div id="fsboSequence"></div></div></section>
+
+<section id="activity" class="view hidden"><div class="two"><div class="card"><div class="label">Seller Activity</div><h2>Calls, Texts, Emails, Notes</h2><div class="toolbar"><select id="activityLead" class="btn" onchange="renderActivity()"></select><button class="btn" onclick="addManualNote()">+ Note</button></div><div id="activityFeed" class="activity"></div></div><div class="card"><div class="label">Lead Summary</div><h2>Context Memory</h2><div id="activitySummary" class="code">Select a lead.</div></div></div></section>
+
+<section id="integrations" class="view hidden"><div class="grid"><div class="card" style="grid-column:span 6"><h3>SMS + Voice</h3><p>Architecture for Twilio/another compliant communications provider and an AI voice service.</p><div class="code">CRM &rarr; secure backend &rarr; SMS/Voice API &rarr; AI agent &rarr; webhook &rarr; CRM</div></div><div class="card" style="grid-column:span 6"><h3>Email Automation</h3><p>Use SendGrid/Mailgun/SMTP or an automation platform. Trigger from stage, lead reply, or next follow-up date.</p></div><div class="card" style="grid-column:span 6"><h3>Calendar</h3><p>Use Google Calendar API or Calendly-style scheduling through a secure backend. This prototype books locally.</p></div><div class="card" style="grid-column:span 6"><h3>Podio Field Mapping</h3><div class="code">App: SELLER LEADS\nOwner Name\nPhone\nEmail\nProperty Address\nLead Type\nStage\nMotivation Score\nTimeline\nProperty Condition\nAsking Price\nARV\nRepairs\nOffer\nProjected Assignment Fee\nAssigned User\nLast Contact\nNext Follow-Up\nAppointment\nSeller Notes\nAI Summary\nActivity History</div></div><div class="card" style="grid-column:span 12"><h3>Production boundary</h3><p>This file is fully functional as a local CRM prototype. Live inbound phone answering, outbound SMS, email delivery, real AI voice, and Google Calendar/Podio sync cannot be securely implemented in a standalone HTML file because API secrets must remain server-side.</p></div></div></section>
+</main></div>
+
+<div id="leadModal" class="modal hidden"><div class="modal-box"><div class="modal-head"><div><div class="label">Seller Lead</div><h2 id="modalTitle">Add Lead</h2></div><button class="x" onclick="closeLeadModal()">&times;</button></div><form id="leadForm" onsubmit="saveLead(event)"><input type="hidden" id="leadId"><div class="form-grid">
+<div class="field"><label>Owner Name</label><input id="owner" required></div><div class="field"><label>Phone</label><input id="phone" required></div><div class="field"><label>Email</label><input id="email"></div><div class="field"><label>Property Address</label><input id="address" required></div><div class="field"><label>Lead Type</label><select id="leadType"></select></div><div class="field"><label>Pipeline Stage</label><select id="stage"></select></div><div class="field"><label>Motivation (1-10)</label><input id="motivation" type="number" min="1" max="10" value="5"></div><div class="field"><label>Timeline</label><select id="timeline"><option>0-30 days</option><option>31-60 days</option><option>61-90 days</option><option>90+ days</option></select></div><div class="field"><label>Condition (1-10, 1=rough)</label><input id="condition" type="number" min="1" max="10" value="5"></div><div class="field"><label>Asking Price</label><input id="asking" type="number"></div><div class="field"><label>ARV</label><input id="arv" type="number"></div><div class="field"><label>Repairs</label><input id="repairs" type="number"></div><div class="field"><label>Offer</label><input id="offer" type="number"></div><div class="field"><label>Projected Assignment</label><input id="assignment" type="number"></div><div class="field"><label>Assigned User</label><select id="assigned"><option>Acquisition Manager 1</option><option>Acquisition Manager 2</option></select></div><div class="field"><label>Next Follow-Up</label><input id="nextFollowUp" type="date"></div><div class="field" style="grid-column:1/-1"><label>Seller Notes / AI Memory</label><textarea id="notes"></textarea></div></div><div class="toolbar" style="justify-content:space-between;margin-top:14px"><div><button type="button" class="btn" onclick="simulateContact('Call')">Log Call</button> <button type="button" class="btn" onclick="simulateContact('SMS')">Log Text</button> <button type="button" class="btn" onclick="simulateContact('Email')">Log Email</button></div><div><button type="button" class="btn red hidden" id="deleteLeadBtn" onclick="deleteCurrentLead()">Delete</button> <button type="button" class="btn" onclick="closeLeadModal()">Cancel</button> <button class="btn gold">Save Lead</button></div></div></form></div></div>
+
+<div id="appointmentModal" class="modal hidden"><div class="modal-box" style="width:min(650px,96vw)"><div class="modal-head"><h2>Book Appointment</h2><button class="x" onclick="closeAppointmentModal()">&times;</button></div><form onsubmit="saveAppointment(event)"><div class="form-grid" style="grid-template-columns:1fr 1fr"><div class="field"><label>Lead</label><select id="apptLead"></select></div><div class="field"><label>Date & Time</label><input id="apptWhen" type="datetime-local" required></div><div class="field"><label>Assigned User</label><select id="apptUser"><option>Acquisition Manager 1</option><option>Acquisition Manager 2</option></select></div><div class="field"><label>Appointment Type</label><select id="apptType"><option>Seller Call</option><option>Property Walkthrough</option><option>Offer Review</option><option>Closing Prep</option></select></div></div><div class="toolbar" style="justify-content:flex-end;margin-top:14px"><button type="button" class="btn" onclick="closeAppointmentModal()">Cancel</button><button class="btn gold">Book</button></div></form></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/src/js/app.js"></script>
+<script src="/src/js/components/navigation/router.js"></script>
+<script src="/src/js/components/ui/reactive-buttons.js"></script>
+<script type="module" src="/src/js/components/experience/premium-3d.js"></script>
+<script src="/src/js/components/experience/premium-interactions.js"></script>
+<script src="/src/js/components/dashboard/dashboard-data-adapter.js"></script>
+<script src="/src/js/components/dashboard/dashboard-command-center.js"></script>
+<script src="/src/js/components/leads/leads-api.js"></script>
+<script src="/src/js/components/leads/leads-page-api.js"></script>
+<script src="/src/js/components/pipeline/pipeline-api-board.js"></script>
+<script src="/src/js/components/activity/activity-api.js"></script>
+<script src="/src/js/components/activity/activity-center.js"></script>
+<script src="/src/js/components/migration/legacy-lead-migration.js"></script>
+<script src="/src/js/components/tasks/tasks-api.js"></script>
+<script src="/src/js/components/tasks/task-center.js"></script>
+<script src="/src/js/components/followups/followups-api.js"></script>
+<script src="/src/js/components/followups/followup-sequence-center.js"></script>
+<script src="/src/js/components/appointments/appointments-api.js"></script>
+<script src="/src/js/components/appointments/appointment-center.js"></script>
+<script src="/src/js/components/deals/deal-workspace-api.js"></script>
+<script src="/src/js/components/deals/deal-analysis-api.js"></script>
+<script src="/src/js/components/deals/deal-analyzer.js"></script>
+<script src="/src/js/components/deals/deal-command-center.js"></script>
+<script src="/src/js/components/deals/deal-workspace-actions.js"></script>
+<script src="/src/js/components/deals/deal-offer-details.js"></script>
+<script src="/src/js/components/deals/deal-dashboard-pulse.js"></script>
+<script src="/src/js/components/buyers/buyers-api.js"></script>
+<script src="/src/js/components/buyers/buyer-navigation.js"></script>
+<script src="/src/js/components/buyers/buyer-form.js"></script>
+<script src="/src/js/components/buyers/buyer-detail-drawer.js"></script>
+<script src="/src/js/components/buyers/buyer-database.js"></script>
+<script src="/src/js/components/buyers/buyer-dashboard-pulse.js"></script>
+<script src="/src/js/components/calling/quick-call.js"></script>
+
+<script src="/src/js/components/ai/ai-lead-intelligence-api.js"></script>
+<script src="/src/js/components/ai/ai-lead-drawer.js"></script>
+<script src="/src/js/components/ai/ai-lead-badges.js"></script>
+
+<script src="/src/js/components/ai/ai-seller-qualification-api.js"></script>
+<script src="/src/js/components/ai/ai-seller-qualification-panel.js"></script>
+<script src="/src/js/components/system/legacy-isolation.js"></script>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

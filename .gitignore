@@ -1,0 +1,59 @@
+# =====================================================
+# Legacy Wholesale CRM
+# Local / generated files
+# =====================================================
+
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Local CRM runtime data
+data/*.json
+data/*.jsonl
+data/*.tmp
+data/**/*.json
+data/**/*.tmp
+!data/.gitkeep
+
+# Upgrade backups
+.upgrade-backups/
+
+# Logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Local databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Temporary backups
+*.backup
+*.backup-*
+
+# Editor
+.vscode/settings.json
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+coverage/
+.nyc_output/
+.cache/
+*.lcov
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+

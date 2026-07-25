@@ -1,0 +1,41 @@
+{
+    "name":  "legacy-wholesale-crm",
+    "version":  "1.0.0",
+    "private":  true,
+    "description":  "Legacy Wholesale CRM - original layout preserved with Vite frontend and Express API",
+    "scripts":  {
+                    "dev":  "concurrently -k -n API,WEB \"npm:dev:api\" \"npm:dev:web\"",
+                    "dev:web":  "vite --host 0.0.0.0",
+                    "dev:api":  "nodemon server/index.js",
+                    "start":  "node server/index.js",
+                    "build":  "vite build",
+                    "preview":  "vite preview --host 0.0.0.0",
+                    "check":  "npm run check:js \u0026\u0026 npm run check:data \u0026\u0026 npm run check:structure \u0026\u0026 npm run check:git",
+                    "check:js":  "node scripts/quality/check-js.cjs",
+                    "check:data":  "node scripts/quality/check-data.cjs",
+                    "check:structure":  "node scripts/quality/check-structure.cjs",
+                    "check:git":  "node scripts/quality/check-git-safety.cjs",
+                    "test:services":  "node scripts/quality/test-services.cjs",
+                    "test:smoke":  "node scripts/quality/test-smoke.cjs",
+                    "test":  "npm run test:services \u0026\u0026 npm run test:smoke \u0026\u0026 npm run test:calling \u0026\u0026 npm run test:ai-intelligence \u0026\u0026 npm run test:ai-qualification \u0026\u0026 npm run test:twilio-config",
+                    "verify":  "npm run check \u0026\u0026 npm run test \u0026\u0026 npm run build",
+                    "github:check":  "npm run check:git \u0026\u0026 npm run check:structure",
+                    "ci":  "npm run verify",
+                    "test:calling":  "node scripts/quality/test-calling.cjs",
+                    "test:ai-intelligence":  "node scripts/quality/test-ai-intelligence.cjs",
+                    "test:ai-qualification":  "node scripts/quality/test-ai-qualification.cjs",
+                    "test:twilio-config":  "node scripts/quality/test-twilio-config.cjs"
+                },
+    "dependencies":  {
+                         "cors":  "latest",
+                         "dotenv":  "latest",
+                         "express":  "latest",
+                         "three":  "0.185.0",
+                         "twilio":  "^6.0.2"
+                     },
+    "devDependencies":  {
+                            "concurrently":  "latest",
+                            "nodemon":  "latest",
+                            "vite":  "latest"
+                        }
+}
