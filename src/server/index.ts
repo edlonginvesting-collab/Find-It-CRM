@@ -1,7 +1,7 @@
 // Public-site deployment entrypoint. The authenticated CRM API remains a separate
 // Node service; the published company site is served by the platform asset binding.
 export default {
-  async fetch(request: Request, env: { ASSETS: { fetch: (request: Request) => Promise<Response> }; DB: { prepare: (sql: string) => { bind: (...values: string[]) => { run: () => Promise<unknown> } } } }) {
+  async fetch(request: Request, env: { ASSETS: { fetch: (request: Request) => Promise<Response> }; DB: { prepare: (sql: string) => { run: () => Promise<unknown>; bind: (...values: string[]) => { run: () => Promise<unknown> } } } }) {
     const url = new URL(request.url);
     if (url.pathname === '/api/walkthrough' && request.method === 'POST') {
       const body = await request.json() as { displayName?: string; email?: string; organizationName?: string };
