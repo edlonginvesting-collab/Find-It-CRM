@@ -6,7 +6,7 @@ The application binds to loopback by default. Put its private origin behind a re
 
 ## Railway deployment
 
-The repository includes `railway.toml`. Create one Railway project with the CRM service, PostgreSQL, and Redis services. Set `DATABASE_URL` and `REDIS_URL` from the service references, set `APP_ORIGIN` to the deployed HTTPS URL, and add the Stripe variables from `.env.example` through Railway's encrypted variables. The deploy command runs migrations before starting the service and exposes `/health` for Railway health checks.
+The repository includes `railway.toml`. Create one Railway project with the CRM service and PostgreSQL service. Set `DATABASE_URL` from the PostgreSQL service reference, set `APP_ORIGIN` to the deployed HTTPS URL, and add the Stripe variables from `.env.example` through Railway's encrypted variables. The deploy command runs migrations before starting the service and exposes `/health` for Railway health checks. Redis is intentionally not required for the paid MVP runtime.
 
 ## Revenue launch order
 
