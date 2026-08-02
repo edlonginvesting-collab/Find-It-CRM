@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "build": "tsc -p tsconfig.json && node scripts/copy-hosting.mjs",
+    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "node --test dist/**/*.test.js",
     "db:migrate": "tsx src/db/migrate.ts",
