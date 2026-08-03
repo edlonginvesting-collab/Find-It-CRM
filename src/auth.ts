@@ -8,6 +8,7 @@ const hashToken = (token: string) => crypto.createHash('sha256').update(token).d
 export async function hashPassword(password: string) { const salt = crypto.randomBytes(16).toString('hex'); const derived = await scrypt(password, salt, 64) as Buffer; return `${salt}:${derived.toString('hex')}`; }
 export async function verifyPassword(password: string, encoded: string) { const [salt, hash] = encoded.split(':'); if (!salt || !hash) return false; const derived = await scrypt(password, salt, 64) as Buffer; const actual = derived.toString('hex'); return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(actual, 'hex')); }
 export async function createSession(userId: string) { const token = crypto.randomBytes(32).toString('base64url'); await db.query('INSERT INTO sessions (user_id, token_hash, expires_at) VALUES ($1,$2,now()+interval \'30 days\')', [userId, hashToken(token)]); return token; }
+export async function createSessionWithClient(client: { query: (text: string, values?: unknown[]) => Promise<unknown> }, userId: string) { const token = crypto.randomBytes(32).toString('base64url'); await client.query('INSERT INTO sessions (user_id, token_hash, expires_at) VALUES ($1,$2,now()+interval \'30 days\')', [userId, hashToken(token)]); return token; }
 export async function requireUser(request: FastifyRequest) {
   const raw = request.cookies.session;
   if (!raw) throw Object.assign(new Error('Authentication required'), { statusCode: 401 });
