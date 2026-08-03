@@ -32,8 +32,6 @@ const stripePriceByPlan = { starter: config.STRIPE_PRICE_STARTER, professional: 
 const requireStripe = () => { if (!stripe) throw Object.assign(new Error('Stripe is not configured'), { statusCode: 503 }); return stripe; };
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 const allowLoginAttempt = (key: string) => { const now = Date.now(); const current = loginAttempts.get(key); if (!current || current.resetAt <= now) { loginAttempts.set(key, { count: 1, resetAt: now + 15 * 60_000 }); return true; } if (current.count >= 10) return false; current.count += 1; return true; };
-const adminToken = (expiresAt: number) => { const payload = `${expiresAt}`; const signature = crypto.createHmac('sha256', config.ADMIN_PASSWORD ?? '').update(payload).digest('base64url'); return `${payload}.${signature}`; };
-const validAdminToken = (token: string | undefined) => { if (!config.ADMIN_PASSWORD || !token) return false; const [payload, signature] = token.split('.'); const expiresAt = Number(payload); if (!payload || !signature || !Number.isSafeInteger(expiresAt) || expiresAt <= Date.now()) return false; const expected = crypto.createHmac('sha256', config.ADMIN_PASSWORD).update(payload).digest(); const actual = Buffer.from(signature, 'base64url'); return actual.length === expected.length && crypto.timingSafeEqual(actual, expected); };
 
 app.addHook('onRequest', async (request, reply) => {
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method)) {
@@ -47,7 +45,6 @@ app.get('/ready', async (_request, reply) => {
   try { await db.query('SELECT 1'); return { status: 'ready' }; }
   catch { return reply.code(503).send({ status: 'unavailable' }); }
 });
-app.get('/admin', async (_request, reply) => reply.sendFile('admin.html'));
 
 const optionalOrganizationName = z.preprocess(
   (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
@@ -85,19 +82,6 @@ app.post('/api/auth/login', async (request, reply) => {
   return { id: account.id };
 });
 app.post('/api/auth/logout', async (request, reply) => { const user = await requireUser(request); await db.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND token_hash=$2', [user.id, crypto.createHash('sha256').update(request.cookies.session ?? '').digest('hex')]); reply.clearCookie('session', { path: '/' }); return reply.code(204).send(); });
-
-app.post('/api/admin/login', async (request, reply) => {
-  if (!config.ADMIN_PASSWORD) return reply.code(503).send({ error: 'Admin access is not configured' });
-  if (!allowLoginAttempt(`admin:${request.ip}`)) return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
-  const input = z.object({ password: z.string().max(256) }).parse(request.body);
-  const expected = Buffer.from(config.ADMIN_PASSWORD);
-  const actual = Buffer.from(input.password);
-  if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) return reply.code(401).send({ error: 'Invalid admin password' });
-  reply.setCookie('admin_session', adminToken(Date.now() + 8 * 60 * 60_000), { httpOnly: true, sameSite: 'strict', secure: config.NODE_ENV === 'production', path: '/', maxAge: 8 * 60 * 60 });
-  return { authenticated: true };
-});
-app.get('/api/admin/session', async (request) => ({ authenticated: validAdminToken(request.cookies.admin_session) }));
-app.post('/api/admin/logout', async (_request, reply) => { reply.clearCookie('admin_session', { path: '/' }); return reply.code(204).send(); });
 
 const uuid = z.string().uuid();
 app.get('/api/plans', async () => {
