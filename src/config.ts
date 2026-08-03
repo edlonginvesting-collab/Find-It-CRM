@@ -8,6 +8,7 @@ const schema = z.object({
   DATABASE_URL: z.string().url(),
   APP_ORIGIN: z.string().url(),
   SESSION_SECRET: z.string().min(32),
+  ADMIN_PASSWORD: z.string().min(12).optional(),
   STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
   STRIPE_PRICE_STARTER: z.string().startsWith('price_').optional(),
