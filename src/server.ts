@@ -46,11 +46,7 @@ app.get('/ready', async (_request, reply) => {
   catch { return reply.code(503).send({ status: 'unavailable' }); }
 });
 
-const optionalOrganizationName = z.preprocess(
-  (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
-  z.string().trim().min(2).max(120).optional(),
-);
-const credentials = z.object({ email: z.string().email().max(254).transform((v) => v.toLowerCase()), password: z.string().min(12).max(256), displayName: z.string().trim().min(1).max(120).optional(), organizationName: optionalOrganizationName });
+const credentials = z.object({ email: z.string().email().max(254).transform((v) => v.toLowerCase()), password: z.string().min(12).max(256), displayName: z.string().trim().min(1).max(120).optional(), organizationName: z.string().trim().min(2).max(120).optional() });
 app.post('/api/auth/register', async (request, reply) => {
   const input = credentials.parse(request.body);
   if (!input.displayName) return reply.code(400).send({ error: 'Display name is required' });
