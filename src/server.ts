@@ -99,6 +99,17 @@ app.post('/api/admin/login', async (request, reply) => {
 });
 app.get('/api/admin/session', async (request) => ({ authenticated: validAdminToken(request.cookies.admin_session) }));
 app.post('/api/admin/logout', async (_request, reply) => { reply.clearCookie('admin_session', { path: '/' }); return reply.code(204).send(); });
+app.get('/api/admin/overview', async (request, reply) => {
+  if (!validAdminToken(request.cookies.admin_session)) return reply.code(401).send({ error: 'Admin authentication required' });
+  const [organizations, users, leads, deals, billing] = await Promise.all([
+    db.query<{ count: string }>('SELECT count(*)::text AS count FROM organizations WHERE deleted_at IS NULL'),
+    db.query<{ count: string }>('SELECT count(*)::text AS count FROM users WHERE disabled_at IS NULL'),
+    db.query<{ count: string }>('SELECT count(*)::text AS count FROM leads WHERE deleted_at IS NULL'),
+    db.query<{ count: string }>('SELECT count(*)::text AS count FROM deals WHERE deleted_at IS NULL'),
+    db.query<{ billing_status: string; count: string }>('SELECT billing_status,count(*)::text AS count FROM organizations WHERE deleted_at IS NULL GROUP BY billing_status ORDER BY billing_status'),
+  ]);
+  return { organizations: organizations.rows[0]?.count ?? '0', users: users.rows[0]?.count ?? '0', leads: leads.rows[0]?.count ?? '0', deals: deals.rows[0]?.count ?? '0', billing: billing.rows };
+});
 
 const uuid = z.string().uuid();
 app.get('/api/plans', async () => {
