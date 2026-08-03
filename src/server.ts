@@ -81,8 +81,9 @@ app.post('/api/auth/login', async (request, reply) => {
   const { rows } = await db.query<{ id: string; password_hash: string }>('SELECT id,password_hash FROM users WHERE email=$1 AND disabled_at IS NULL', [input.email]);
   if (!rows[0] || !(await verifyPassword(input.password, rows[0].password_hash))) return reply.code(401).send({ error: 'Invalid credentials' });
   const account = rows[0]; if (!account) return reply.code(401).send({ error: 'Invalid credentials' }); const token = await createSession(account.id);
+  const membership = await db.query<{ organization_id: string }>('SELECT organization_id FROM memberships WHERE user_id=$1 ORDER BY created_at LIMIT 1', [account.id]);
   reply.setCookie('session', token, { httpOnly: true, sameSite: 'strict', secure: config.NODE_ENV === 'production', path: '/', maxAge: 2_592_000 });
-  return { id: account.id };
+  return { id: account.id, organizationId: membership.rows[0]?.organization_id ?? null };
 });
 app.post('/api/auth/logout', async (request, reply) => { const user = await requireUser(request); await db.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND token_hash=$2', [user.id, crypto.createHash('sha256').update(request.cookies.session ?? '').digest('hex')]); reply.clearCookie('session', { path: '/' }); return reply.code(204).send(); });
 
@@ -254,6 +255,18 @@ app.get('/api/analytics/overview', async (request) => {
   const summary = rows[0] ?? { leads: '0', qualified: '0', offers: '0', closed: '0', revenue: '0' };
   const leads = Number(summary.leads); const qualified = Number(summary.qualified); const offers = Number(summary.offers); const closed = Number(summary.closed);
   return { ...summary, conversion: { qualified: leads ? qualified / leads : 0, offers: leads ? offers / leads : 0, closed: leads ? closed / leads : 0 } };
+});
+
+app.get('/api/deals', async (request) => {
+  const q = z.object({ organizationId: uuid, limit: z.coerce.number().int().min(1).max(100).default(100) }).parse(request.query);
+  const user = await requireUser(request); await requireMembership(user.id, q.organizationId);
+  const { rows } = await db.query(
+    `SELECT d.id,d.stage,d.offer_amount AS "offerAmount",d.assignment_fee AS "assignmentFee",d.updated_at AS "updatedAt",
+      COALESCE(NULLIF(concat_ws(' ',c.first_name,c.last_name),''),'Untitled deal') AS "contactName"
+     FROM deals d LEFT JOIN leads l ON l.id=d.lead_id LEFT JOIN contacts c ON c.id=l.contact_id
+     WHERE d.organization_id=$1 AND d.deleted_at IS NULL ORDER BY d.updated_at DESC LIMIT $2`, [q.organizationId, q.limit]
+  );
+  return { items: rows };
 });
 
 const stageInput = z.object({ organizationId: uuid, stage: z.string().trim().min(1).max(80) });
