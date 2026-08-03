@@ -28,10 +28,8 @@ form.addEventListener('submit', async event => {
     const response = await fetch('/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Unable to create workspace');
-    status.textContent = 'You are signed in. Your workspace is ready.';
+    status.textContent = 'Workspace created. Your core CRM is ready; plans add usage and features when you need them.';
     form.reset();
-    form.querySelector('button').disabled = true;
-    window.location.hash = '#home';
   } catch (error) { status.textContent = error instanceof Error ? error.message : 'Unable to create workspace'; }
 });
 
