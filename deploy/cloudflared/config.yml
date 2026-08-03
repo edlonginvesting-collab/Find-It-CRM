@@ -2,5 +2,5 @@ tunnel: REPLACE_WITH_REMOTE_TUNNEL_ID
 credentials-file: /etc/cloudflared/REPLACE_WITH_REMOTE_TUNNEL_ID.json
 ingress:
   - hostname: crm.example.com
-    service: http://127.0.0.1:3000
+    service: http://127.0.0.1:3100
   - service: http_status:404
