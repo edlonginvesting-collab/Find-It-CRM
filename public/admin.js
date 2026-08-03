@@ -9,6 +9,6 @@ adminForm.addEventListener('submit', async event => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Unable to sign in');
     adminStatus.textContent = 'Admin access granted. Opening the CRM…';
-    window.location.href = '/#app';
+    window.location.href = '/#/home';
   } catch (error) { adminStatus.textContent = error instanceof Error ? error.message : 'Unable to sign in'; }
 });
