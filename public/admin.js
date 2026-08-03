@@ -8,7 +8,6 @@ adminForm.addEventListener('submit', async event => {
     const response = await fetch('/api/admin/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password }) });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Unable to sign in');
-    adminStatus.textContent = 'Admin access granted. Opening the CRM…';
-    window.location.href = '/#/home';
+    adminStatus.textContent = 'Admin access granted.';
   } catch (error) { adminStatus.textContent = error instanceof Error ? error.message : 'Unable to sign in'; }
 });
