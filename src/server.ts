@@ -252,4 +252,7 @@ app.patch('/api/deals/:id/stage', async (request, reply) => {
 async function close() { await db.end(); }
 process.on('SIGTERM', () => void app.close().then(close));
 process.on('SIGINT', () => void app.close().then(close));
-await app.listen({ host: config.HOST, port: config.PORT });
+// Railway's public service is configured for port 3000. Keep the application
+// listener aligned with that published port so an injected platform PORT
+// value cannot make the public domain return a 502.
+await app.listen({ host: config.HOST, port: 3000 });
